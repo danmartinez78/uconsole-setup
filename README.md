@@ -125,6 +125,20 @@ You can relaunch Polybar without rebooting:
 ```bash
 pkill -x polybar || true
 DISPLAY=:0 ~/.config/polybar/launch.sh
+## 🎨 Shell Colors (Optional)
+
+Want a colorful prompt and vivid `ls` colors?
+
+- Copy the provided bash snippets into your environment:
+
+```bash
+mkdir -p ~/.bashrc.d
+cp -f ./bashrc.d/10-color-prompt.bash ~/.bashrc.d/
+cp -f ./bashrc.d/20-dircolors-dracula.bash ~/.bashrc.d/
+```
+
+Log out/in or `source ~/.bashrc`. The prompt shows time, user@host, cwd, git branch (with `*` if dirty), and Python venv. `ls` uses a Dracula‑ish palette.
+
 ```
 
 ---
