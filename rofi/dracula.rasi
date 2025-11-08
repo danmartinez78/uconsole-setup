@@ -1,0 +1,39 @@
+* {
+  dracula-bg:    #282a36;
+  dracula-fg:    #f8f8f2;
+  dracula-gray:  #44475a;
+  dracula-accent:#bd93f9;
+  dracula-hl:    #6272a4;
+  font: "JetBrainsMono Nerd Font 10";
+}
+window {
+  background-color: @dracula-bg;
+  border: 2px;
+  border-color: @dracula-accent;
+  padding: 8px;
+}
+mainbox { padding: 6px; }
+inputbar {
+  background-color: @dracula-gray;
+  text-color: @dracula-fg;
+  padding: 6px;
+  border-radius: 6px;
+}
+prompt { text-color: @dracula-accent; }
+textbox { text-color: @dracula-fg; }
+listview {
+  lines: 8;
+  columns: 1;
+  fixed-height: true;
+  padding: 6px 0;
+}
+element {
+  background-color: transparent;
+  text-color: @dracula-fg;
+  padding: 4px 6px;
+}
+element selected {
+  background-color: @dracula-accent;
+  text-color: @dracula-bg;
+  border-radius: 6px;
+}

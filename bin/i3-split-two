@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -e
+i3-msg 'append_layout /dev/null' >/dev/null
+i3-msg "exec kitty -T DASH_LEFT -e bash -lc 'cool-login'" >/dev/null
+sleep 0.6
+i3-msg 'split h; exec env TERM=xterm-256color kitty -T DASH_RIGHT -e bash -lc "(pipes.sh -t 1 -p 1 || pipes.sh || true); echo; echo Press q to quit.; exec bash"' >/dev/null
+sleep 0.6
+i3-msg 'focus parent; focus left; resize set width 50 ppt; focus right; resize set width 50 ppt' >/dev/null

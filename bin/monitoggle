@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+INTERNAL=$(xrandr | awk '/ connected primary/ {print $1}')
+EXTERNAL=$(xrandr | awk '/ connected/ && !/primary/ {print $1; exit}')
+
+if [ -n "$EXTERNAL" ]; then
+  xrandr --output "$EXTERNAL" --auto --primary --output "$INTERNAL" --off
+else
+  xrandr --output "$INTERNAL" --auto --primary
+fi

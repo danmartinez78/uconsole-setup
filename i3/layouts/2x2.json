@@ -1,0 +1,25 @@
+{
+  "type": "con",
+  "layout": "splith",
+  "percent": 1.0,
+  "nodes": [
+    {
+      "type": "con",
+      "layout": "splitv",
+      "percent": 0.5,
+      "nodes": [
+        { "type": "con", "percent": 0.5, "swallows": [ { "title": "^DASH_TL$" } ] },
+        { "type": "con", "percent": 0.5, "swallows": [ { "title": "^DASH_BL$" } ] }
+      ]
+    },
+    {
+      "type": "con",
+      "layout": "splitv",
+      "percent": 0.5,
+      "nodes": [
+        { "type": "con", "percent": 0.5, "swallows": [ { "title": "^DASH_TR$" } ] },
+        { "type": "con", "percent": 0.5, "swallows": [ { "title": "^DASH_BR$" } ] }
+      ]
+    }
+  ]
+}

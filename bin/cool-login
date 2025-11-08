@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+clear
+if command -v neofetch >/dev/null 2>&1; then
+  neofetch
+else
+  echo "System: $(lsb_release -sd 2>/dev/null || uname -a)"
+  echo "Uptime: $(uptime -p)"
+fi
+echo "----------------------------------------"
+echo "Welcome back, $(whoami)"
+echo "Kernel: $(uname -r)  |  $(uptime -p)"
+echo "----------------------------------------"
+exec bash

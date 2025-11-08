@@ -1,0 +1,33 @@
+general {
+  colors = true
+  interval = 5
+}
+
+order += "wireless _first_"
+order += "read_file battcap"
+order += "read_file battstat"
+order += "volume master"
+order += "tztime local"
+
+wireless _first_ {
+  format_up = "  %quality %essid %ip"
+  format_down = "down"
+}
+
+# Battery (read directly from sysfs)
+read_file battcap {
+  path = "/sys/class/power_supply/axp20x-battery/capacity"
+  format = "🔋 %content%%"
+}
+read_file battstat {
+  path = "/sys/class/power_supply/axp20x-battery/status"
+  format = "%content"
+}
+
+volume master {
+  format = " %volume"
+}
+
+tztime local {
+  format = " %Y-%m-%d %H:%M"
+}

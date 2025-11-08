@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  ros2:
+    image: ros:humble
+    container_name: ros2
+    network_mode: "host"
+    environment:
+      - ROS_DOMAIN_ID=0
+    volumes:
+      - ${HOME}/ros2_ws:/ros2_ws
+      - ${HOME}/ros2_ws/config/container_aliases.bash:/etc/profile.d/ros2-aliases.sh:ro
+    working_dir: /ros2_ws
+    tty: true
+    stdin_open: true
