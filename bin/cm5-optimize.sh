@@ -94,14 +94,34 @@ echo "==> Configuring eMMC optimizations"
 # Add noatime to root mount if not present
 if ! grep -q "noatime" /etc/fstab 2>/dev/null; then
   echo ""
-  echo "⚠️  To reduce eMMC writes, add 'noatime,nodiratime' to your root mount in /etc/fstab"
-  echo "Example: /dev/mmcblk0p2 / ext4 defaults,noatime,nodiratime 0 1"
+  echo "╔═══════════════════════════════════════════════════════════════╗"
+  echo "║            eMMC Optimization: fstab Configuration             ║"
+  echo "╚═══════════════════════════════════════════════════════════════╝"
   echo ""
-  read -p "Open /etc/fstab for editing now? (y/N) " -n 1 -r
+  echo "To reduce eMMC wear, we need to add 'noatime,nodiratime' to the"
+  echo "root partition mount options in /etc/fstab."
+  echo ""
+  echo "What to do:"
+  echo "  1. Find the line for your root partition (mounted on /)"
+  echo "     Usually looks like: LABEL=writable / ext4 discard 0 1"
+  echo ""
+  echo "  2. Add 'noatime,nodiratime' to the options (4th column)"
+  echo "     Change to: LABEL=writable / ext4 discard,noatime,nodiratime 0 1"
+  echo "                                              ^^^^^^^^^^^^^^^^^^^^^"
+  echo "                                              Add these"
+  echo ""
+  echo "  3. Save and exit (Ctrl+O, Enter, Ctrl+X in nano)"
+  echo ""
+  read -p "Open /etc/fstab for editing now? (Y/n) " -n 1 -r
   echo
-  if [[ $REPLY =~ ^[Yy]$ ]]; then
+  if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+    echo ""
+    echo "Opening /etc/fstab in nano..."
+    sleep 2
     sudo nano /etc/fstab
-    echo "[!] Changes will take effect after reboot"
+    echo "[!] Changes will take effect after reboot (or run: sudo mount -o remount /)"
+  else
+    echo "[!] Skipped fstab edit - you can do this manually later"
   fi
 else
   echo "[✓] noatime already configured in fstab"

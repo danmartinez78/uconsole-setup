@@ -215,46 +215,53 @@ SRC
   echo "[✓] Shell colors installed"
 fi
 
-### Docker/ROS2 aliases
-BRC_DIR="$HOME/.bashrc.d"
-ENSURE_DIR "$BRC_DIR"
-ALIAS_FILE="$BRC_DIR/ros2_docker_aliases.bash"
-BK "$ALIAS_FILE"
-cat > "$ALIAS_FILE" <<'ALIAS'
+### Docker/ROS2 support (optional)
+echo ""
+read -p "Install Docker/ROS2 support? (y/N) " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+  BRC_DIR="$HOME/.bashrc.d"
+  ENSURE_DIR "$BRC_DIR"
+  ALIAS_FILE="$BRC_DIR/ros2_docker_aliases.bash"
+  BK "$ALIAS_FILE"
+  cat > "$ALIAS_FILE" <<'ALIAS'
 # ROS2 / Docker helpers (host)
 alias dr-up='docker compose -f "$HOME/docker-compose.ros2.yml" up -d'
 alias dr-down='docker compose -f "$HOME/docker-compose.ros2.yml" down'
 alias dr-bash='docker exec -it ros2 bash'
 alias dr-logs='docker logs -f ros2'
 ALIAS
-echo "[✓] Docker/ROS2 aliases installed"
+  echo "[✓] Docker/ROS2 aliases installed"
 
-# Ensure ~/.bashrc.d sourcing
-if ! grep -q "\.bashrc\.d" "$HOME/.bashrc" 2>/dev/null; then
-  cat >> "$HOME/.bashrc" <<'SRC'
+  # Ensure ~/.bashrc.d sourcing
+  if ! grep -q "\.bashrc\.d" "$HOME/.bashrc" 2>/dev/null; then
+    cat >> "$HOME/.bashrc" <<'SRC'
 
 # Load per-feature aliases & extras
 if [[ -d "$HOME/.bashrc.d" ]]; then
   for f in "$HOME"/.bashrc.d/*.bash; do [ -r "$f" ] && source "$f"; done
 fi
 SRC
-fi
+  fi
 
-### Docker Compose for ROS2
-if [[ -f "$REPO_DIR/docker-compose.ros2.yml" ]]; then
-  BK "$HOME/docker-compose.ros2.yml"
-  cp "$REPO_DIR/docker-compose.ros2.yml" "$HOME/docker-compose.ros2.yml"
-  echo "[✓] Docker Compose for ROS2 installed"
-fi
+  # Docker Compose for ROS2
+  if [[ -f "$REPO_DIR/docker-compose.ros2.yml" ]]; then
+    BK "$HOME/docker-compose.ros2.yml"
+    cp "$REPO_DIR/docker-compose.ros2.yml" "$HOME/docker-compose.ros2.yml"
+    echo "[✓] Docker Compose for ROS2 installed"
+  fi
 
-### ROS2 workspace
-ROS_WS="$HOME/ros2_ws"
-ENSURE_DIR "$ROS_WS/config"
+  # ROS2 workspace
+  ROS_WS="$HOME/ros2_ws"
+  ENSURE_DIR "$ROS_WS/config"
 
-if [[ -f "$REPO_DIR/ros2_ws/config/container_aliases.bash" ]]; then
-  BK "$ROS_WS/config/container_aliases.bash"
-  cp "$REPO_DIR/ros2_ws/config/container_aliases.bash" "$ROS_WS/config/container_aliases.bash"
-  echo "[✓] ROS2 container aliases installed"
+  if [[ -f "$REPO_DIR/ros2_ws/config/container_aliases.bash" ]]; then
+    BK "$ROS_WS/config/container_aliases.bash"
+    cp "$REPO_DIR/ros2_ws/config/container_aliases.bash" "$ROS_WS/config/container_aliases.bash"
+    echo "[✓] ROS2 container aliases installed"
+  fi
+else
+  echo "[⊘] Skipped Docker/ROS2 installation"
 fi
 
 ### Wallpapers
@@ -280,10 +287,8 @@ Next steps:
   3. Test Polybar:
      ~/.config/polybar/launch.sh
 
-  4. Docker/ROS2 usage:
-     dr-up       # Start ROS2 container
-     dr-bash     # Enter container shell
-     dr-down     # Stop container
+  4. Optional CM5 optimizations:
+     sudo ~/.local/bin/cm5-optimize.sh
 
   5. Optional:
      • Run 'sudo sensors-detect' to configure temp sensors
@@ -295,3 +300,14 @@ Enjoy your retro terminal uConsole! 🟢
 To uninstall, run: ./uninstall_uconsole.sh
 
 EOF
+
+# Docker/ROS2 usage info (only if installed)
+if [[ -f "$HOME/docker-compose.ros2.yml" ]]; then
+  cat <<'DOCKERINFO'
+Docker/ROS2 commands:
+  dr-up       # Start ROS2 container
+  dr-bash     # Enter container shell
+  dr-down     # Stop container
+
+DOCKERINFO
+fi
