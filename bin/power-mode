@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+#
+# power-mode — Toggle CPU power/performance modes on CM5
+#
+# Usage: power-mode [performance|balanced|powersave|status]
+#
+# Modes:
+#   performance  - Max CPU freq, best responsiveness (AC power)
+#   balanced     - schedutil governor, dynamic scaling (default)
+#   powersave    - Min freq when possible, max battery life
+#   status       - Show current mode and CPU info
+#
+set -euo pipefail
+
+MODE="${1:-status}"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+show_status() {
+  echo -e "${CYAN}╔═══════════════════════════════════════════════════════════════╗${NC}"
+  echo -e "${CYAN}║              CM5 CPU Power Status                             ║${NC}"
+  echo -e "${CYAN}╚═══════════════════════════════════════════════════════════════╝${NC}"
+  echo ""
+  
+  # Current governor
+  local gov=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null || echo "unknown")
+  echo -e "Current Governor: ${GREEN}${gov}${NC}"
+  
+  # CPU frequencies
+  echo ""
+  echo "CPU Frequencies:"
+  for cpu in /sys/devices/system/cpu/cpu[0-3]; do
+    if [[ -f "$cpu/cpufreq/scaling_cur_freq" ]]; then
+      local freq=$(cat "$cpu/cpufreq/scaling_cur_freq")
+      freq=$((freq / 1000))
+      local max=$(cat "$cpu/cpufreq/scaling_max_freq")
+      max=$((max / 1000))
+      local min=$(cat "$cpu/cpufreq/scaling_min_freq")
+      min=$((min / 1000))
+      echo -e "  $(basename $cpu): ${YELLOW}${freq} MHz${NC} (min: ${min}, max: ${max})"
+    fi
+  done
+  
+  # Temperature
+  if [[ -f /sys/class/thermal/thermal_zone0/temp ]]; then
+    local temp=$(cat /sys/class/thermal/thermal_zone0/temp)
+    temp=$((temp / 1000))
+    if [[ $temp -gt 75 ]]; then
+      echo -e "\nTemperature: ${RED}${temp}°C ⚠️${NC}"
+    elif [[ $temp -gt 60 ]]; then
+      echo -e "\nTemperature: ${YELLOW}${temp}°C${NC}"
+    else
+      echo -e "\nTemperature: ${GREEN}${temp}°C${NC}"
+    fi
+  fi
+  
+  # Power mode hint
+  echo ""
+  echo "Available modes:"
+  echo "  power-mode performance   # Max performance (AC power)"
+  echo "  power-mode balanced      # Default (schedutil)"
+  echo "  power-mode powersave     # Battery saver"
+}
+
+set_governor() {
+  local gov="$1"
+  local desc="$2"
+  
+  echo -e "${CYAN}Setting governor to: ${GREEN}${gov}${NC} (${desc})"
+  
+  # Check if governor is available
+  if ! cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors | grep -q "$gov"; then
+    echo -e "${RED}Error: Governor '$gov' not available${NC}" >&2
+    echo "Available governors:"
+    cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors
+    exit 1
+  fi
+  
+  # Apply to all CPUs
+  echo "$gov" | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor >/dev/null
+  
+  echo -e "${GREEN}✓${NC} Governor set to ${gov}"
+  
+  # Show new status
+  sleep 0.5
+  show_status
+}
+
+case "$MODE" in
+  performance|perf)
+    set_governor "performance" "Maximum performance, highest power draw"
+    ;;
+  
+  balanced|sched|schedutil)
+    set_governor "schedutil" "Balanced performance and efficiency (recommended)"
+    ;;
+  
+  powersave|battery|eco)
+    set_governor "powersave" "Maximum battery life, reduced performance"
+    ;;
+  
+  status|info|show)
+    show_status
+    ;;
+  
+  *)
+    echo "Usage: power-mode [performance|balanced|powersave|status]" >&2
+    echo ""
+    echo "Modes:"
+    echo "  performance  - Max CPU freq, best responsiveness"
+    echo "  balanced     - Dynamic scaling (schedutil) [default]"
+    echo "  powersave    - Min freq, max battery life"
+    echo "  status       - Show current power mode"
+    exit 1
+    ;;
+esac

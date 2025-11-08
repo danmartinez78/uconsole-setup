@@ -12,3 +12,10 @@ services:
     working_dir: /ros2_ws
     tty: true
     stdin_open: true
+    # CM5 optimization: Soft memory limits for lightweight telemetry
+    deploy:
+      resources:
+        limits:
+          memory: 4G      # Prevent container from consuming all 16GB
+        reservations:
+          memory: 512M    # Guarantee minimum allocation

@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# check-throttle - Show warning icon only when CPU is hot (>75°C)
+# Used by Polybar throttle module
+
+TEMP_FILE="/sys/class/thermal/thermal_zone0/temp"
+
+if [[ ! -f "$TEMP_FILE" ]]; then
+  exit 0
+fi
+
+TEMP=$(cat "$TEMP_FILE")
+TEMP_C=$((TEMP / 1000))
+
+# Only output warning if temp is >75°C (approaching throttle territory)
+if [[ $TEMP_C -gt 75 ]]; then
+  echo "⚠️ ${TEMP_C}°C"
+fi
+
+# Output nothing if cool - takes zero space in Polybar
