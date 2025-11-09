@@ -1,94 +1,119 @@
-# 🧠 uConsole Setup Environment
+﻿# 🧠 uConsole i3 Setup
 
-This repository contains a fully configured **uConsole developer environment** for ROS 2, Docker, and i3 with Polybar integration.
-It’s designed for field-ready robotics and embedded development, optimized for the **ClockworkPi uConsole**.
+A fully configured **i3 desktop environment** for the **ClockworkPi uConsole CM5**, featuring a retro terminal aesthetic, CM5-specific optimizations, and optional ROS 2 Docker integration for robotics development.
+
+Designed for field-ready development on the handheld uConsole, optimized for both everyday computing and embedded systems work.
 
 ---
 
 ## 🧩 Features
 
-### System
+### Desktop Environment
 
-* Lightweight **i3 window manager** setup
-* **Polybar** with live system stats, icons, and battery readout
-* **Persistent aliases** for Docker + ROS2 workflow
-* **Kitty terminal** integration
-* **Neofetch** startup display
-* Ergonomic i3 keybindings for handheld use
+* Lightweight **i3 window manager** with ergonomic keybindings for handheld use
+* **Polybar** status bar with retro terminal theme (green/amber/cyan)
+  * Live system stats: CPU, RAM, temperature, disk usage
+  * Battery level with color-coded icons
+  * WiFi status (SSID, signal, IP), audio volume, uptime
+  * Thermal throttle warning (>75°C)
+* **Kitty terminal** with JetBrainsMono Nerd Font
+* **Colored shell prompt** with git branch indicators and venv support
+* **Rofi** application launcher with Dracula theme
 
-### Development Environment
+### CM5 Optimizations
 
-* **ROS 2 Humble** (Docker-based)
-* `docker-compose.ros2.yml` with support for:
+* **Memory tuning** (swappiness=10, zram compressed swap)
+* **eMMC longevity** (noatime, tmpfs, weekly TRIM)
+* **CPU governor** (schedutil for balanced performance/battery)
+* **Power mode toggle** (performance/balanced/powersave)
+* **Thermal monitoring** with real-time Polybar warnings
+* See [CM5-OPTIMIZATIONS.md](CM5-OPTIMIZATIONS.md) for full details
 
-  * Fast startup (`docker-compose up -d`)
+### Development Environment (Optional)
+
+* **ROS 2 Humble** Docker-based setup
+* `docker-compose.ros2.yml` with:
+  * Fast startup (`docker compose up -d`)
   * Multicast ROS 2 network discovery
   * Persistent workspace mounts (`~/ros2_ws`)
-* **Aliases** for ROS2 CLI shortcuts (`rlist`, `rhx`, `recho`, `rnodes`, `rgrep`)
-
-### Polybar
-
-* Active window title
-* CPU %, Memory usage, Temperature, Disk usage
-* WLAN IP address
-* Audio volume level (with mute icon)
-* Battery level with icons and charging indicator
-* Clock (HH:MM, 24-hour format)
+* **CLI aliases** for ROS2 workflow (`rlist`, `rhz`, `recho`, `rnodes`, `rgrep`)
 
 ---
 
-## 🧱 Installation
+## 🚀 Installation
 
-Clone this repo and run the setup script (if provided):
+Clone this repository:
 
 ```bash
 git clone https://github.com/danmartinez78/uconsole-i3-setup.git
 cd uconsole-i3-setup
 ```
 
-If you’re restoring on a new uConsole:
+Run the automated installer:
 
 ```bash
-bash install_uconsole.sh
+./install_uconsole.sh
 ```
 
-Otherwise, you can manually sync your configs:
+The installer will:
+- Install i3, Polybar, Kitty, Rofi, and dependencies
+- Set up JetBrainsMono Nerd Font (user-local)
+- Copy all configurations to `~/.config/`
+- Install utility scripts to `~/.local/bin/`
+- **Prompt** for colored shell prompt (optional, default YES)
+- **Prompt** for Docker/ROS2 setup (optional, default NO)
+
+Then apply CM5 optimizations (recommended):
 
 ```bash
-rsync -a ./config ~/.config/
-rsync -a ./bin ~/.local/bin/
-rsync -a ./ros2_ws ~/ros2_ws/
-cp -f ./docker-compose.ros2.yml ~/
+sudo ~/.local/bin/cm5-optimize.sh
 ```
 
-Then reload i3:
-
-```
-Mod + Shift + R
-```
+Log out and select **i3** from your display manager, or reboot.
 
 ---
 
-## 🛣️ Docker / ROS 2 Workflow
+## 🛣️ Docker / ROS 2 Workflow (Optional)
 
-| Action                   | Command                                             |
+> **Note:** Only available if you enabled Docker/ROS2 during installation.
+
+| Action                   | Alias / Command                                     |
 | ------------------------ | --------------------------------------------------- |
-| Start container          | `docker-compose -f ~/docker-compose.ros2.yml up -d` |
-| Stop container           | `docker-compose -f ~/docker-compose.ros2.yml down`  |
-| Attach interactive shell | `docker exec -it ros2 bash`                         |
-| View logs                | `docker logs -f ros2`                               |
+| Start container          | `dr-up`                                             |
+| Stop container           | `dr-down`                                           |
+| Attach interactive shell | `dr-bash`                                           |
+| View logs                | `dr-logs`                                           |
 
-### Common ROS2 Aliases (inside container)
+### ROS2 Aliases (inside container)
 
 | Alias       | Command                               |
 | ----------- | ------------------------------------- |
 | `rlist`     | `ros2 topic list`                     |
-| `rhx`       | `ros2 topic hz <topic>`               |
+| `rhz`       | `ros2 topic hz <topic>`               |
 | `recho`     | `ros2 topic echo <topic>`             |
 | `rnodes`    | `ros2 node list`                      |
-| `rgrep foo` | Grep for topic names containing “foo” |
+| `rgrep foo` | Grep for topic names containing "foo" |
 
-Aliases are auto-sourced via `~/.bashrc` inside the container.
+---
+
+## ⚡ CM5 Power Management
+
+Use the `power-mode` utility to toggle CPU performance:
+
+```bash
+power-mode performance   # Max CPU speed (AC power)
+power-mode balanced      # Default (schedutil, adaptive)
+power-mode powersave     # Minimum frequency (battery life)
+power-mode status        # Show current governor & temps
+```
+
+Monitor optimizations:
+
+```bash
+cat /proc/sys/vm/swappiness  # Should show 10
+zramctl                      # Should show ~8GB compressed swap
+mount | grep noatime         # Root with noatime enabled
+```
 
 ---
 
@@ -96,49 +121,73 @@ Aliases are auto-sourced via `~/.bashrc` inside the container.
 
 | Combo                            | Action                                      |
 | -------------------------------- | ------------------------------------------- |
-| **Alt + Ctrl + H/J/K/L**         | Move window left/down/up/right              |
-| **Alt + Ctrl + Shift + H/J/K/L** | Resize window                               |
-| **Alt + Ctrl + Return**          | Attach to ROS2 Docker shell                 |
-| **Alt + Ctrl + U / X**           | Start / Stop Docker Compose                 |
-| **Alt + Ctrl + O**               | Tail ROS2 logs                              |
-| **Alt + Ctrl + P**               | Launch startup animation (Neofetch + Pipes) |
-| **Alt + Ctrl + S**               | Take screenshot (region select)             |
-| **Alt + Q**                      | Close window                                |
+| **Mod + Enter**                  | Open Kitty terminal                         |
+| **Mod + D**                      | Launch Rofi app launcher                    |
+| **Mod + Q**                      | Close window                                |
+| **Mod + H/J/K/L**                | Focus window left/down/up/right             |
+| **Mod + Shift + H/J/K/L**        | Move window                                 |
+| **Mod + F**                      | Toggle fullscreen                           |
+| **Mod + Shift + Space**          | Toggle floating                             |
+| **Mod + 1-9**                    | Switch to workspace 1-9                     |
+| **Mod + Shift + 1-9**            | Move window to workspace 1-9                |
+| **Mod + Shift + R**              | Reload i3 config                            |
+| **Mod + Shift + E**              | Exit i3                                     |
+
+**Custom bindings** (optional, requires ROS2 setup):
+- **Mod + Alt + Return**: Attach to ROS2 Docker shell
+- **Mod + Alt + U/X**: Start/Stop Docker Compose
+- **Mod + Alt + O**: Tail ROS2 logs
+- **Mod + Alt + S**: Screenshot (region select)
+
+> Default Mod key: **Alt** (configurable in `~/.config/i3/config`)
 
 ---
 
 ## 📊 Polybar Overview
 
-| Module     | Info                                |
-| ---------- | ----------------------------------- |
-| ** CPU**  | CPU load percentage                 |
-| ** MEM**  | Memory used                         |
-| ** TEMP** | CPU temperature                     |
-| ** DISK** | Root partition usage                |
-| ** WIFI** | WLAN IP address                     |
-| ** VOL**  | Volume level or mute                |
-| ** TIME** | System clock                        |
-| ** BAT**  | Battery level or charging indicator |
+| Module       | Info                                |
+| ------------ | ----------------------------------- |
+| **i3**       | Workspace indicators (1-9)          |
+| **󰻠 CPU**    | CPU load percentage                 |
+| **󰍛 RAM**    | Memory usage percentage             |
+| ** TEMP**   | CPU temperature (amber → red >70°C) |
+| **throttle** | Thermal warning (only shows >75°C)  |
+| **󰋊 DISK**   | Root partition usage                |
+| **󰖩 WIFI**   | SSID, signal %, IP address          |
+| **󰕾 VOL**    | Volume level or mute                |
+| **󰂎 BAT**    | Battery level with charging icon    |
+| **󰔟 Uptime** | System uptime in hours              |
+| **󰥔 TIME**   | System clock (HH:MM)                |
 
-You can relaunch Polybar without rebooting:
+Restart Polybar without rebooting:
 
 ```bash
 pkill -x polybar || true
-DISPLAY=:0 ~/.config/polybar/launch.sh
-## 🎨 Shell Colors (Optional)
-
-Want a colorful prompt and vivid `ls` colors?
-
-- Copy the provided bash snippets into your environment:
-
-```bash
-mkdir -p ~/.bashrc.d
-cp -f ./bashrc.d/10-color-prompt.bash ~/.bashrc.d/
-cp -f ./bashrc.d/20-dircolors-dracula.bash ~/.bashrc.d/
+~/.config/polybar/launch.sh
 ```
 
-Log out/in or `source ~/.bashrc`. The prompt shows time, user@host, cwd, git branch (with `*` if dirty), and Python venv. `ls` uses a Dracula‑ish palette.
+---
 
+## 🎨 Shell Colors
+
+If you enabled colored shell prompt during installation:
+
+**Features:**
+- Retro color scheme (amber user, cyan path, green git)
+- Git branch indicator with `*` for uncommitted changes
+- Python venv display
+- Exit code indicator (✘ for failures)
+
+**Dircolors:**
+- Green directories
+- Amber executables/scripts
+- Cyan configs (`.json`, `.yaml`, etc.)
+- Red archives
+
+Apply changes:
+
+```bash
+source ~/.bashrc
 ```
 
 ---
@@ -147,20 +196,13 @@ Log out/in or `source ~/.bashrc`. The prompt shows time, user@host, cwd, git bra
 
 ### Fonts / Icons Missing
 
-Make sure Nerd Fonts are installed:
+Verify Nerd Font installation:
 
 ```bash
-fc-list | grep -i nerd
+fc-list | grep -i jetbrains
 ```
 
-Recommended:
-
-```
-JetBrainsMono Nerd Font
-Noto Color Emoji
-```
-
-Then rebuild font cache:
+Rebuild font cache if needed:
 
 ```bash
 fc-cache -fv
@@ -168,32 +210,45 @@ fc-cache -fv
 
 ### Battery Not Showing
 
-List available devices:
+Check available power supply devices:
 
 ```bash
 ls -1 /sys/class/power_supply/
 ```
 
-Update `[module/battery]` section in `~/.config/polybar/config.ini` with:
+For CM5, update `~/.config/polybar/config.ini`:
 
 ```ini
+[module/battery]
 battery = axp20x-battery
-adapter = axp20x-ac
+adapter = axp22x-ac
 ```
+
+### Temperature Not Showing
+
+List thermal zones:
+
+```bash
+ls /sys/class/thermal/thermal_zone*/type
+cat /sys/class/thermal/thermal_zone0/temp
+```
+
+For CM5, Polybar uses `thermal_zone0` (cpu-thermal).
 
 ---
 
-## 🧭 Exporting and Rebuilding
+## 🧭 Backup and Restore
 
-To snapshot the current config for transfer or versioning:
+Create a snapshot:
 
 ```bash
 STAMP=$(date +%Y%m%d-%H%M)
 tar -czf ~/uconsole-backup-$STAMP.tar.gz \
-    ~/.config/i3 ~/.config/polybar ~/.local/bin ~/docker-compose.ros2.yml ~/ros2_ws
+    ~/.config/i3 ~/.config/polybar ~/.config/kitty ~/.config/rofi \
+    ~/.local/bin ~/docker-compose.ros2.yml ~/ros2_ws ~/.bashrc.d
 ```
 
-On a fresh system, extract and restore:
+Restore on a fresh system:
 
 ```bash
 tar -xzf uconsole-backup-*.tar.gz -C ~/
@@ -203,7 +258,7 @@ tar -xzf uconsole-backup-*.tar.gz -C ~/
 
 ## 🧑‍💻 Author
 
-**Dan** – Drone systems & autonomy architecture
+**Dan** — Drone systems & autonomy architecture  
 💡 Robotics, mining autonomy, ROS 2, and embedded Linux tinkering.
 
 ---
